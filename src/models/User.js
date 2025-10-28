@@ -6,7 +6,7 @@ const UserShema = new mongoose.Schema({
     password: { type: String, required: true },
     cpf: { type: String, required: true, unique: true },
     telefone: { type: String, required: true },
-    saldo: { type: Number },
+    saldo: { type: Number, default: 1000 },
     pixKey: [
         {
             type: {
