@@ -8,6 +8,8 @@ const tokenMiddleware = require('./src/middlewares/authToken')
 route.post('/register', userController.cadastro)
 route.post('/login', userController.login)
 
+route.post('/createkey',tokenMiddleware.authToken, logController.createKey)
+
 route.get('/protegido', tokenMiddleware.authToken ,logController.teste)
 
 
