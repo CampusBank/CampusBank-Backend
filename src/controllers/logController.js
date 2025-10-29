@@ -40,3 +40,9 @@ exports.createKey = async (req, res) => {
     }
 }
 
+exports.sendPix = async(req,res)=>{
+    
+
+    const user = await User.findOne({ "pixKey.key": chave });
+}
+
