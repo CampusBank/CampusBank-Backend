@@ -9,6 +9,7 @@ route.post('/register', userController.cadastro)
 route.post('/login', userController.login)
 
 route.post('/createkey',tokenMiddleware.authToken, logController.createKey)
+route.post('/sendPix', tokenMiddleware.authToken ,logController.sendPix)
 
 route.get('/protegido', tokenMiddleware.authToken ,logController.teste)
 
