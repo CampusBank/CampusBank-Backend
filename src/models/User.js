@@ -7,6 +7,11 @@ const UserShema = new mongoose.Schema({
     cpf: { type: String, required: true, unique: true },
     telefone: { type: String, required: true },
     saldo: { type: Number, default: 1000 },
+    score: { type: Number, default: 100 },
+    role: {type: String,
+        enum: ['admin', 'user'],
+        default: 'user'
+    },
     pixKey: [
         {
             type: {

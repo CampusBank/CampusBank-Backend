@@ -41,6 +41,18 @@ exports.createKey = async (req, res) => {
     }
 }
 
+exports.checkKey = async(req,res) =>{
+    const key = req.body.key
+
+    const user = await User.findOne({"pixKey.key": key})
+    if(!user)  return res.status(404).json({ mensagem: "Chave Pix não encontrada." });
+
+    res.status(200).json({
+        nome: user.nome,
+        score: user.score < 60 ? 'Este usuário tem um score de confiança baixo.a': null
+    })
+}
+
 exports.sendPix = async (req, res) => {
     try {
         const sender = await User.findById(req.user.id);
