@@ -1,4 +1,5 @@
 const Denuncia = require('../models/Denuncia')
+const User = require("..//models/User")
 
 exports.criarDenuncia = async(req, res) =>{
     try {
@@ -10,6 +11,8 @@ exports.criarDenuncia = async(req, res) =>{
             descricao,
             transacao
         })
+
+        if(!denuncia) return res.status(400).json({mensagem: "error ao criar denuncia"})
 
         res.status(201).json({
             mensagem: "Denuncia criada com sucesso",
@@ -32,20 +35,23 @@ exports.listarDenuncia = async(req, res) =>{
     }
 }
 
-exports.atualizarDenuncia = async(req,res) =>{
+exports.atualizarDenuncia = async (req, res) => {
     try {
-        const {idDenun, status} = req.body
+        const { idDenun, status } = req.body;
 
-        const denununcia = await Denuncia.findByIdAndUpdate(idDenun).populate('transacao')
-        if(!denununcia) return res.json({mensagem: "Denuncia nao encontrada"})
+  
+        const denuncia = await Denuncia.findById(idDenun).populate('transacao');
+        if (!denuncia) {
+            return res.status(404).json({ mensagem: "Denúncia não encontrada." });
+        }
+
         
-        denununcia.status = status
+        denuncia.status = status;
+        await denuncia.save();
 
-        await denununcia.save()
 
-        if (status === 'aceita') {
-           
-            const transacao = denununcia.transacao
+        if (status === 'resolvida' && denuncia.transacao) {
+            const transacao = denuncia.transacao;
             const usuarioDenunciado = await User.findById(transacao.receiver);
 
             if (usuarioDenunciado) {
@@ -54,11 +60,13 @@ exports.atualizarDenuncia = async(req,res) =>{
             }
         }
 
-        res.json({ mensagem: 'Denúncia atualizada com sucesso!' });
-        
+        return res.json({ mensagem: 'Denúncia atualizada com sucesso!' });
+
     } catch (error) {
-        res.status(500).json({ mensagem: 'Erro ao atualizar denúncia.' })
+        console.error(error);
+        return res.status(500).json({ mensagem: 'Erro ao atualizar denúncia.' });
     }
-}
+};
+
 
  

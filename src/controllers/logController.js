@@ -41,15 +41,15 @@ exports.createKey = async (req, res) => {
     }
 }
 
-exports.checkKey = async(req,res) =>{
-    const key = req.body.key
+exports.checkKey = async (req, res) => {
+    const { key } = req.body
 
-    const user = await User.findOne({"pixKey.key": key})
-    if(!user)  return res.status(404).json({ mensagem: "Chave Pix não encontrada." });
+    const user = await User.findOne({ "pixKey.key": key })
+    if (!user) return res.status(404).json({ mensagem: "Chave Pix não encontrada." });
 
     res.status(200).json({
         nome: user.nome,
-        score: user.score < 60 ? 'Este usuário tem um score de confiança baixo.a': null
+        score: user.score < 60 ? 'Este usuário tem um score de confiança baixa' : 'ta deboinha'
     })
 }
 
@@ -68,7 +68,7 @@ exports.sendPix = async (req, res) => {
             return res.status(400).json({ mensagem: "ta achando que a vida é um morango 🍓 (saldo insuficiente)" });
         }
 
- 
+
         sender.saldo -= valor;
         receiver.saldo += valor;
 
@@ -86,7 +86,7 @@ exports.sendPix = async (req, res) => {
             createdAt: Date.now()
         });
 
-      
+
         return res.status(201).json({
             mensagem: "Transação feita com sucesso!",
             transaction
@@ -94,6 +94,27 @@ exports.sendPix = async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ mensagem: "Erro ao processar transação." });
+    }
+}
+
+exports.listTransaction = async (req, res) => {
+    try {
+        const idUser = req.user.id
+        const transacoes = await Transaction.find({
+            $or:[
+                {sender: idUser},
+                {receiver: idUser}
+            ]
+        })
+
+        if (transacoes.length === 0)
+            return res.status(404).json({ mensagem: 'Nenhuma transação encontrada.' });
+
+
+        res.status(200).json(transacoes)
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ mensagem: "Erro ao encontrar transações." });
     }
 }
 
