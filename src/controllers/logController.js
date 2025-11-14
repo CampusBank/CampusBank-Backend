@@ -106,22 +106,27 @@ exports.sendPix = async (req, res) => {
 
 exports.listTransaction = async (req, res) => {
     try {
-        const idUser = req.user.id
+        const idUser = req.user.id;
+
         const transacoes = await Transaction.find({
-            $or:[
-                {sender: idUser},
-                {receiver: idUser}
+            $or: [
+                { sender: idUser },
+                { receiver: idUser }
             ]
         })
+        .populate("sender", "nome email")      // pega nome e email do remetente
+        .populate("receiver", "nome email");   // pega nome e email do destinatário
 
-        if (transacoes.length === 0)
+        if (!transacoes || transacoes.length === 0) {
             return res.status(404).json({ mensagem: 'Nenhuma transação encontrada.' });
+        }
 
+        return res.status(200).json(transacoes);
 
-        res.status(200).json(transacoes)
     } catch (error) {
         console.error(error);
         return res.status(500).json({ mensagem: "Erro ao encontrar transações." });
     }
-}
+};
+
 
