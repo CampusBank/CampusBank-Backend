@@ -29,7 +29,7 @@ const DenunciaSchema = new mongoose.Schema({
   
     status: {
         type: String,
-        enum: ['pendente', 'em análise', 'resolvida', 'recusada'],
+        enum: ['pendente', 'resolvida', 'recusada'],
         default: 'pendente'
     },
 

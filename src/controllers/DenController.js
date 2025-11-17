@@ -39,25 +39,43 @@ exports.atualizarDenuncia = async (req, res) => {
     try {
         const { idDenun, status } = req.body;
 
-  
+        // Buscar denúncia com transação populada
         const denuncia = await Denuncia.findById(idDenun).populate('transacao');
         if (!denuncia) {
             return res.status(404).json({ mensagem: "Denúncia não encontrada." });
         }
 
-        
+        // Atualiza status
         denuncia.status = status;
         await denuncia.save();
 
-
+        // Se RESOLVIDA → devolver dinheiro ao usuário e punir golpista
         if (status === 'resolvida' && denuncia.transacao) {
-            const transacao = denuncia.transacao;
-            const usuarioDenunciado = await User.findById(transacao.receiver);
 
-            if (usuarioDenunciado) {
-                usuarioDenunciado.score = usuarioDenunciado.score - 10; 
-                await usuarioDenunciado.save();
+            const transacao = denuncia.transacao;
+
+        
+            const sender = await User.findById(transacao.sender);
+
+            
+            const receiver = await User.findById(transacao.receiver);
+
+            if (!sender || !receiver) {
+                return res.status(400).json({ mensagem: "Usuários envolvidos na transação não encontrados." });
             }
+
+   
+            sender.saldo = sender.saldo + transacao.valor;
+            await sender.save();
+
+           
+            receiver.saldo = receiver.saldo - transacao.valor
+            receiver.score = receiver.score - 10;
+            await receiver.save();
+
+         
+            transacao.status = "falhou";
+            await transacao.save();
         }
 
         return res.json({ mensagem: 'Denúncia atualizada com sucesso!' });
@@ -67,6 +85,7 @@ exports.atualizarDenuncia = async (req, res) => {
         return res.status(500).json({ mensagem: 'Erro ao atualizar denúncia.' });
     }
 };
+
 
 
  
