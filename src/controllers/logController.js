@@ -57,32 +57,39 @@ exports.sendPix = async (req, res) => {
     const sender = await User.findById(req.user.id);
     const { chavePix, valor } = req.body;
 
-  
+    
     const receiver = await User.findOne({ "pixKey.key": chavePix });
 
     if (!receiver) {
       return res.status(404).json({ mensagem: "Chave Pix não encontrada." });
     }
 
+   
+    if (sender._id.toString() === receiver._id.toString()) {
+      return res.status(400).json({
+        mensagem: "Você não pode enviar PIX para si mesmo!"
+      });
+    }
+
     
     const chaveEncontrada = receiver.pixKey.find(pix => pix.key === chavePix);
     const typePix = chaveEncontrada?.type || 'desconhecida';
 
-   
+    
     if (sender.saldo < valor) {
       return res.status(400).json({
         mensagem: "ta achando que a vida é um morango 🍓 (saldo insuficiente)"
       });
     }
 
-
+    // Atualizar saldos
     sender.saldo -= valor;
     receiver.saldo += valor;
 
     await sender.save();
     await receiver.save();
 
-   
+    
     const transaction = await Transaction.create({
       sender: sender._id,
       receiver: receiver._id,
@@ -103,6 +110,7 @@ exports.sendPix = async (req, res) => {
     return res.status(500).json({ mensagem: "Erro ao processar transação." });
   }
 };
+
 
 exports.listTransaction = async (req, res) => {
     try {
